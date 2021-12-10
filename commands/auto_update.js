@@ -22,19 +22,32 @@ exports.handler = (argv) => {
   api.getZones(argv)
   .then((all_zones) => {
     all_zones.forEach((zone) => {
-      console.log(`${zone.name} [status=${zone.status}, paused=${zone.paused}, type=${zone.type}]`);
+      // debug: zone details
+      // console.log(zone);
+      console.log(chalk.grey(`${zone.name} ${zone.id} [status=${zone.status}, paused=${zone.paused}, type=${zone.type}]`));
       if (zone.status === 'active' && !zone.paused && zone.type === 'full') {
-        console.log(`Process redirects...?`)
-
         const redir_filename = argv.configDir.contents.filter((f) => f.substr(0, zone.name.length) === zone.name)[0];
         if (undefined === redir_filename) {
-          console.log(chalk.keyword('purple')(`No redirect description for ${chalk.bold(zone.name)} was found.`));
+          // no redirect description found
+          console.log(chalk.magenta.bold(`No redirect description for ${zone.name} was found.`));
         } else {
-          console.log(`Found redirects?!?!?`)
-          // console.log(`${JSON.stringify(zone, null, 2)}`)
+          // check redirect descriptions
+          console.log(chalk.blue.bold(`Check redirect descriptions.`));
+
+          // TODO
+
+          api.getPageRules(argv, zone.id)
+          .then((resp) => {
+            console.log(resp);
+          })
+
         }
       }
     });
   });
+
+  // TODO list summary of zones without redirects defined?
+
+  // TODO should also list any redirects files that have no active zone
 }
 
