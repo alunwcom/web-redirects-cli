@@ -3,3 +3,7 @@ node_modules/
 
 # directory for local testing of domain redirect JSON docs
 domains/
+redirects/
+
+# don't add any local .env settings to git
+.env
