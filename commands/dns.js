@@ -10,6 +10,7 @@ const inquirer = require('inquirer');
 const level = require('level');
 
 const {
+  collectReplacementRecords,
   error, buildRequiredDNSRecordsForPagerules, createTheseDNSRecords,
   deleteTheseDNSRecords, hasDNSRecord, hasConflictingDNSRecord,
   outputDNSRecordsTable, outputPageRulesAsText, warn
@@ -80,6 +81,21 @@ exports.handler = (argv) => {
                 table.row(...line_array.map((i) => chalk.white(i)));
               }
             });
+
+            // make sure all required dns records are present
+            // TODO: this will add any unknown/unlisted DNS to the conflicts list
+            // ...which means they'll get deleted...when they should likely be
+            // preserved...i.e. if they're not in direct conflicts with a requirement
+            // they should stay.
+            required_dns_records.forEach((line) => {
+              const line_array = [line.type, line.name, line.content, line.ttl,
+                line.proxied ? chalk.keyword('orange')(line.proxied) : line.proxied];
+              if (!hasDNSRecord(dns_records, line) && !hasConflictingDNSRecord(dns_records, line)) {
+                conflicts.push(line);
+                table.row(...line_array.map((i) => chalk.keyword('orange')(i)));
+              }
+            });
+
             // removing the annoying extra line under the header
             const output_array = table.toString().split('\n');
             output_array.splice(1, 1);
@@ -89,7 +105,8 @@ exports.handler = (argv) => {
               error('The current DNS records will not work with the current Page Rules.');
 
               warn('At least these DNS records MUST be added:');
-              outputDNSRecordsTable(required_dns_records);
+              const replacements = collectReplacementRecords(required_dns_records, conflicts);
+              outputDNSRecordsTable(replacements);
 
               inquirer.prompt({
                 type: 'list',
@@ -112,10 +129,8 @@ exports.handler = (argv) => {
                     // delete the ones in the way
                     deleteTheseDNSRecords(zone_id, conflicts);
                     console.log();
-                    // put in the new ones
-                    // TODO: remove any existing correct names before attempting this...
-                    // ...or handle the failure error case (400 status code)
-                    createTheseDNSRecords(zone_id, required_dns_records);
+                    // put in the replacements and any new records
+                    createTheseDNSRecords(zone_id, replacements);
                     break;
                   default:
                     break;
