@@ -4,7 +4,7 @@
   "description": "Managing HTTP(S) redirects via JSON docs",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --verbose"
   },
   "bin": {
     "redirects": "./index.js"
