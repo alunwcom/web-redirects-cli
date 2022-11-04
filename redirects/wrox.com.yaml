@@ -1,0 +1,44 @@
+name: wrox.com
+# which sub-domains will be redirected? default to @ and www (if empty list). if routes defined - then no defaults included unless configured
+# TODO - try to use custom domains for this .. if it is possible to assign them before zone is active
+routes:
+  - blogs
+  - embeddedce60
+  - javascript-frameworks
+  - silverlight2
+  - www
+  - @
+# TODO - need to capture DNS records where they deviate from default (i.e. @ A 192.0.2.0 and www CNAME @)
+dns:
+# each record needs: type, name, value, proxied, ttl
+  - type: A # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
+    name: www
+    value: 178.79.182.234
+    proxied: true
+    #ttl: 3600 # may be omitted for 'auto' - cannot be set for 'proxied: true'
+    #priority: 10 # only applicable to MX records
+
+# TODO - should all rules be stored as KV? i.e. no 'Page Rules' - to standardize YAML format
+# TODO - script needed to validate stored KV values against YAML, i.e. dry-run to show diff
+redirects:
+
+- base: www # if no 'base' declared - then redirect acts on all routes
+  from: /WileyCDA/Section/id-818383.html
+  to: https://www.wiley.com/WileyCDA/Section/id-831681.html
+
+- base: # 'base' may be a list if multiple subdomains require redirect. if base value not in routes, then it will have no effect
+    - www
+    - blogs
+  from: /WileyCDA/Section/id-819410.html
+  to: https://www.wiley.com/WileyCDA/Section/id-831682.html
+
+- from: ^/go/(.*)
+  to: https://www.wiley.com/go/$1
+  caseSensitive: true # redirect matching is case-insensitive by default
+  includeParams: true # request query string is not included in the redirect matching by default
+
+- from: ^/WileyCDA/WroxTitle/.*productCd-([0-9]{9}[0-9X])
+  to: https://www.wiley.com/remtitle.cgi?isbn=$1
+
+- from: ^/(.*)
+  to: https://www.wiley.com
