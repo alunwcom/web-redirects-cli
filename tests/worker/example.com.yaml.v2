@@ -1,0 +1,55 @@
+name: example.com
+
+
+
+# use workers for all redirects?? if not - how to implement?
+
+# TODO partial zones? 
+# TODO plans other than 'free'
+
+# if no routes - default to apex and www. (if any routes defined - then all routes mst be defined, and no redirects exist outside a route)
+# remove 'base' option altogether
+
+
+alias:
+- www3
+
+redirects:
+- from: /old/one-a.html
+  to: https://foo.com/new/one-a.html
+- from: /old/one-b.html
+  to: https://foo.com/new/one-b.html
+- from: ^/(.*)$
+  to: https://foo.com
+
+host:
+- blog
+- www.qa.internal
+- test
+  redirects:
+  - from: /old/one-a.html
+    to: https://bar.com/new/one-a.html
+  - from: /old/one-b.html
+    to: https://bar.com/new/one-b.html
+  - from: ^/(.*)$
+    to: https://bar.com
+
+
+
+dns:
+# each record needs: type, name, value, proxied, ttl
+- type: A # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
+  name: '@'
+  value: 1.2.3.4
+  proxied: true # Cloudflare specific naming?
+  #ttl: 3600 # may be omitted for 'auto' - cannot be set for 'proxied: true'
+  #priority: 10 # only applicable to MX records
+- type: CNAME # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
+  name: www
+  value: example.com
+  proxied: true
+- type: A # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
+  name: test
+  value: 1.2.3.4
+  proxied: false
+  ttl: 3600 # may be omitted for 'auto' - cannot be set for 'proxied: true'

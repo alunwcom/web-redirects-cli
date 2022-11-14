@@ -6,6 +6,7 @@ routes:
 - blog
 - www.qa.internal
 - www
+- test
 - '@'
 
 # TODO - need to capture DNS records where they deviate from default (i.e. @ A 192.0.2.0 and www CNAME @)
@@ -14,7 +15,7 @@ dns:
 - type: A # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
   name: '@'
   value: 1.2.3.4
-  proxied: true
+  proxied: true # Cloudflare specific naming?
   #ttl: 3600 # may be omitted for 'auto' - cannot be set for 'proxied: true'
   #priority: 10 # only applicable to MX records
 - type: CNAME # case-insensitive? initially only cater for common records (in redirect zones) A, AAAA, CNAME, MX, TXT - any other records to throw an error (i.e. not implemented)
@@ -40,6 +41,9 @@ redirects:
     - blog
   from: /old/one-b.html
   to: https://foo.com/new/one-b.html
+
+- from: /old/one-c.html
+  to: https://foo.com/new/one-c.html
 
 - from: ^/old/pattern/(.*)$
   to: https://foo.com/new/pattern/$1

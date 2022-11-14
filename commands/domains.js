@@ -77,6 +77,7 @@ function confirmDomainAdditions(domains_to_add, account_name, account_id, argv) 
     }).then((answers) => {
       if (answers.confirmCreate) {
         console.log(chalk.gray('  Creating the zone...'));
+        // create (post) zone api
         axios.post('/zones', {
           name: domain,
           account: { id: account_id }
