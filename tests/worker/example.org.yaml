@@ -1,0 +1,10 @@
+name: example.org
+# default routes:
+# default dns:
+redirects: 
+
+- from: /xyz.html
+  to: https://foo.com/xyz.html
+
+- from: ^/(.*)$
+  to: https://foo.com/default.html
