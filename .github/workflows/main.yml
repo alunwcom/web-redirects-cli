@@ -20,9 +20,6 @@ env:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    # only run this job if the FOSSA API key is defined
-    if: ${{ FOSSA_API_KEY != '' }}
-
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -42,6 +39,7 @@ jobs:
 
       # Install FOSSA CLI
       - name: Install FOSSA CLI
+        if: (steps.checksecrets.outputs.secret_present == 'YES')
         run: "curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash"
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -49,4 +47,5 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
+        if: (steps.checksecrets.outputs.secret_present == 'YES')
         run: fossa analyze
