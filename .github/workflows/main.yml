@@ -21,7 +21,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # only run this job if the FOSSA API key is defined
-    if: ${{ env.FOSSA_API_KEY != '' }}
+    if: ${{ FOSSA_API_KEY != '' }}
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
