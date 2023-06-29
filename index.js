@@ -60,4 +60,6 @@ require('yargs')
   .command(require('./commands/sync'))
   .demandCommand(1, '')
   .alias('h', 'help')
+  .showHelpOnFail(false)
+  .strict(true)
   .argv;
