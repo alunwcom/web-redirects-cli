@@ -7,6 +7,7 @@ const chalk = require('chalk');
 // const fs = require('fs');
 // const path = require('path');
 const inquirer = require('inquirer');
+const { isEqual } = require('lodash/fp');
 const shared = require('../lib/shared');
 const { CLOUDFLARE_BASE_URL } = require('../lib/global'); // TODO ...or move constants to index.js
 
@@ -19,26 +20,18 @@ const add = chalk.blue('[TO ADD] ');
 // const cross = chalk.red('\u2717');
 // const edit = chalk.blue('✎');
 
-const checkSettings = (localSettings, remoteSettings) => {
-  // TODO compare values...
-  // Object.entries(localSettings).map(([key, value]) => { console.log(`MAP ${key}`) });
-
-  // console.log(localSettings);
+const getSettingDifferences = (localSettings, remoteSettings) => {
+  // check each locally (yaml) defined setting against the remote (cloudflare) values
   const result = Object.entries(localSettings).map(([key, value]) => {
-    // console.log(`${key} => ${value}`);
-    // console.log(remoteSettings.filter((obj) => obj.id === key));
     const remoteSetting = remoteSettings.filter((obj) => obj.id === key);
     const remoteValue = remoteSetting.length > 0 ? remoteSetting[0].value : undefined;
-    // console.log(remoteValue);
-    // console.log(value === remoteValue);
-    if (value !== remoteValue) {
-      return {
-        setting: key,
-        match: value === remoteValue
-      };
-    }
-    return {};
-  });
+    return {
+      setting: key,
+      local: value,
+      remote: remoteValue,
+      match: isEqual(value, remoteValue)
+    };
+  }).filter((setting) => setting.match === false);
   return result;
 };
 
@@ -126,19 +119,19 @@ exports.handler = async (argv) => {
       return;
     }
     // 3. compare config to see if in sync - if not output differences and prompt to update?
+    // 3a. zone settings
     const remoteZoneSettings = await shared.getZoneSettings(value.cloudflare.id);
-    // console.log(`value:\n${JSON.stringify(value, null, '  ')}`);
-    // console.log(`zone_settings:\n${JSON.stringify(zone_settings, null, '  ')}`);
-
-    const settings_in_sync = checkSettings(localZoneSettings, remoteZoneSettings);
-    console.log(settings_in_sync);
-    if (!settings_in_sync) {
+    const settings_in_sync = getSettingDifferences(localZoneSettings, remoteZoneSettings);
+    if (settings_in_sync.length > 0) {
       console.log(`${edit} ${key}`);
-      // 3a. zone settings
+      console.log(chalk.grey(`${JSON.stringify(settings_in_sync, null, '  ')}`));
+
+
 
       // 3b. zone dns
 
       // 3c. zone redirects
+      return;
     }
     // 4. otherwise must be in sync
     console.log(`${in_sync} ${key}`);
