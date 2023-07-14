@@ -20,6 +20,51 @@ const add = chalk.blue('[TO ADD] ');
 // const cross = chalk.red('\u2717');
 // const edit = chalk.blue('✎');
 
+const unassignedIp = '192.0.2.0';
+
+// default dns will be apex and www subdomain with ${unassignedIp}
+const getDefaultDnsRecords = (domain) => [
+  {
+    type: 'A',
+    name: domain,
+    content: unassignedIp,
+    ttl: 1,
+    proxied: true
+  },
+  {
+    type: 'CNAME',
+    name: `www.${domain}`,
+    content: domain,
+    ttl: 1,
+    proxied: true
+  }
+];
+
+const dnsSortOrder = (a, b) => {
+  if (a.type < b.type) return -1;
+  if (a.type > b.type) return 1;
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
+  if (a.content < b.content) return -1;
+  if (a.content > b.content) return 1;
+  return 0;
+};
+
+const compareDnsRecords = (localDns, remoteDns) => {
+  if (remoteDns) {
+    const remoteSimplified = remoteDns.map((item) => ({
+      name: item.name,
+      type: item.type,
+      content: item.content,
+      proxied: item.proxied,
+      ttl: item.ttl
+    }));
+    console.log(remoteSimplified);
+  } else {
+    console.log('no remote dns records');
+  }
+};
+
 const getSettingDifferences = (localSettings, remoteSettings) => {
   // check each locally (yaml) defined setting against the remote (cloudflare) values
   const result = Object.entries(localSettings).map(([key, value]) => {
@@ -114,8 +159,8 @@ exports.handler = async (argv) => {
     // 2. is zone in cloudflare - if not output yaml config and prompt to add?
     if (!value.cloudflare) {
       console.log(`${add} ${key}`);
-      // prompt
-      // add
+      // TODO prompt
+      // TODO add
       return;
     }
     // 3. compare config to see if in sync - if not output differences and prompt to update?
@@ -126,13 +171,30 @@ exports.handler = async (argv) => {
       console.log(`${edit} ${key}`);
       console.log(chalk.grey(`${JSON.stringify(settings_in_sync, null, '  ')}`));
 
-
-
       // 3b. zone dns
 
       // 3c. zone redirects
-      return;
+      // return;
     }
+
+    const dns = await shared.getZoneDnsRecords(value.cloudflare.id);
+    console.log(compareDnsRecords('', dns));
+    // const summary = dns.map((item) => ({
+    //   name: item.name,
+    //   type: item.type,
+    //   content: item.content,
+    // }));
+    // summary.sort((a, b) => {
+    //   if (a.type < b.type) return -1;
+    //   if (a.type > b.type) return 1;
+    //   if (a.name < b.name) return -1;
+    //   if (a.name > b.name) return 1;
+    //   if (a.content < b.content) return -1;
+    //   if (a.content > b.content) return 1;
+    //   return 0;
+    // });
+    // console.log(summary);
+
     // 4. otherwise must be in sync
     console.log(`${in_sync} ${key}`);
   });

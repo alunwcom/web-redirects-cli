@@ -58,6 +58,7 @@ require('yargs')
   // Setup Worker and KV stuff for large redirects
   .command(require('./commands/worker'))
   .command(require('./commands/sync'))
+  .command(require('./commands/sync2'))
   .demandCommand(1, '')
   .alias('h', 'help')
   .showHelpOnFail(false)
